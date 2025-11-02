@@ -16,6 +16,9 @@ csv_file = 'all_shaders.csv'
 def is_texture_slot(switch: str) -> bool:
     return "MAPPING" in switch or "MULTI_UV" in switch or "_MAP_ENABLED" in switch
 
+def is_alpha_function(switch: str) -> bool:
+    return "ALPHA" in switch
+
 class Shader_db:
     def __init__(self, shader_db_csv, weights, report_file = 'report.txt'):
         self.shader_db_csv = shader_db_csv
@@ -59,6 +62,8 @@ class Shader_db:
             weights = self.weights['other_switch']
             if is_texture_slot(k):
                 weights = self.weights['texture_slot']
+            if is_alpha_function(k):
+                weights = self.weights['alpha_support']
             weight += weights['removed'] * (not v)
             weight += weights['added'] * v
         return weight
@@ -104,6 +109,10 @@ class Shader_db:
 def parse_weight_dict(input: str) -> Dict[str, Dict[str, int]]:
     weights = {
       "texture_slot": {
+        "added": 1,
+        "removed": 1,
+      },
+      "alpha_support": {
         "added": 1,
         "removed": 1,
       },
