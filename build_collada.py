@@ -80,8 +80,7 @@ def add_images (collada, images, relative_path = '../../..'):
     return(collada)
 
 # Build the materials section
-def add_materials (collada, metadata, relative_path = '../../..', forward_render = False):
-    materials = metadata['materials']
+def add_materials (collada, materials, relative_path = '../../..', forward_render = False):
     # Materials and effects can be done in parallel
     library_materials = ET.SubElement(collada, 'library_materials')
     library_effects = ET.SubElement(collada, 'library_effects')
@@ -1423,10 +1422,12 @@ def build_collada (metadata_name, animation_metadata = {}):
         skeletal_bones = list(set(skeletal_bones))
         ani_times = [0,8.33] #Default values, unclear if needed or should be 0,0?
         collada = basic_collada()
-        images_data = sorted(list(set([x for y in metadata['materials'] for x in metadata['materials'][y]['shaderTextures'].values()])))
+        used_material_names = sorted(list(set([x['material']['material'] for x in submeshes])))
+        used_materials = {x:metadata['materials'][x] for x in metadata['materials'] if x in used_material_names}
+        images_data = sorted(list(set([x for y in used_materials for x in used_materials[y]['shaderTextures'].values()])))
         collada = add_images(collada, images_data, relative_path)
         print("Adding materials...")
-        collada = add_materials(collada, metadata, relative_path, forward_render = physics_present)
+        collada = add_materials(collada, used_materials, relative_path, forward_render = physics_present)
         if 'animations' in animation_metadata and metadata['name'] in animation_metadata['animations']:
             print("Adding animations...")
             metadata['heirarchy'] = apply_gltf_pose(metadata['heirarchy'], metadata['name'])
